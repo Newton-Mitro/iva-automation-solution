@@ -81,7 +81,14 @@ export const phaseOneWorkFlow: WorkflowStepDefinition[] = [
     icon: MessageSquare,
     manual: true,
     manualInput: "otp",
-    selectors: ['input[id^="otp-"]', 'input[autocomplete="one-time-code"]'],
+    selectors: [
+      'input[id^="otp-"]',
+      'input[id*="otp" i]',
+      'input[name*="otp" i]',
+      'input[autocomplete="one-time-code"]',
+      'input[inputmode="numeric"]',
+      'input[type="tel"]',
+    ],
     action: "focus",
   },
 
@@ -211,6 +218,17 @@ export const phaseOneWorkFlow: WorkflowStepDefinition[] = [
     fileIndex: 1,
   },
 
+  {
+    id: "p1_other1_complete",
+    phase: "phase_one",
+    title: "Wait for other webfile 1 upload to complete",
+    icon: ShieldCheck,
+    selectors: [],
+    action: "wait",
+    valueKey: "application.otherWebfileOne",
+    optional: true,
+  },
+
   // ─────────────────────────────────────────────
   // OTHER WEBFILE 2
   // ─────────────────────────────────────────────
@@ -242,6 +260,17 @@ export const phaseOneWorkFlow: WorkflowStepDefinition[] = [
     valueKey: "application.otherWebfileTwo",
     optional: true,
     fileIndex: 2,
+  },
+
+  {
+    id: "p1_other2_complete",
+    phase: "phase_one",
+    title: "Wait for other webfile 2 upload to complete",
+    icon: ShieldCheck,
+    selectors: [],
+    action: "wait",
+    valueKey: "application.otherWebfileTwo",
+    optional: true,
   },
 
   // ─────────────────────────────────────────────
@@ -280,10 +309,12 @@ export const phaseOneWorkFlow: WorkflowStepDefinition[] = [
   {
     id: "p1_other3_complete",
     phase: "phase_one",
-    title: "Wait for other webfile 3 to upload",
+    title: "Wait for other webfile 3 upload to complete",
     icon: ShieldCheck,
     selectors: [],
     action: "wait",
+    valueKey: "application.otherWebfileThree",
+    optional: true,
   },
 
   // ─────────────────────────────────────────────
@@ -382,5 +413,9 @@ export const phaseOneWorkFlow: WorkflowStepDefinition[] = [
     selectors: ['button[type="submit"]'],
     text: "Continue Booking",
     action: "click",
+    retryOnSameUrl: {
+      path: "/appointment/time-slot",
+      stepId: "p1_select_date",
+    },
   },
 ];

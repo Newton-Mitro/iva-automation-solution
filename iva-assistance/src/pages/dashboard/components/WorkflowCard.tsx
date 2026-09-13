@@ -25,6 +25,7 @@ type Props = {
 export default function WorkflowCard({
   steps,
   started,
+  latestMessage,
   onStart,
   onStartFromStep,
   onRunOnlyStep,
@@ -100,25 +101,25 @@ export default function WorkflowCard({
       >
         <div className="flex min-w-0 items-center gap-3">
           {/* Flow Icon */}
-          <div className="ivac-primary-bg flex h-9 w-9 shrink-0 items-center justify-center rounded-xl">
-            {/* Reset */}
-            <button
-              type="button"
-              onClick={() => {
-                onReset();
-                requestAnimationFrame(() => {
-                  stepsContainerRef.current?.scrollTo({
-                    top: 0,
-                    behavior: "smooth",
-                  });
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onReset();
+
+              requestAnimationFrame(() => {
+                stepsContainerRef.current?.scrollTo({
+                  top: 0,
+                  behavior: "smooth",
                 });
-              }}
-              title="Reset workflow"
-              className="ivac-hover flex shrink-0 items-center gap-1 rounded-lg px-2 py-1.5 text-[8px] font-semibold ivac-text-muted"
-            >
-              <RefreshCw size={11} />
-            </button>
-          </div>
+              });
+            }}
+            title="Reset workflow"
+            aria-label="Reset workflow"
+            className="ivac-primary-bg ivac-hover ivac-text-muted flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors"
+          >
+            <RefreshCw size={13} />
+          </button>
 
           {/* Heading */}
           <div className="min-w-0">
@@ -177,6 +178,7 @@ export default function WorkflowCard({
                     <WorkflowSteps
                       steps={phaseSteps}
                       started={started}
+                      latestMessage={latestMessage}
                       onHumanAction={onHumanAction}
                       onStartFromStep={onStartFromStep}
                       onRunOnlyStep={onRunOnlyStep}

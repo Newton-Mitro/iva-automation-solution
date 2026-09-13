@@ -17,6 +17,26 @@ export function ManualStepAction({
 }: ManualStepActionProps) {
   const [value, setValue] = useState("");
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
+  const submittedOtpRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    submittedOtpRef.current = null;
+    setValue("");
+  }, [step.id]);
+
+  useEffect(() => {
+    if (step.manualInput !== "otp") {
+      return;
+    }
+
+    const otp = value.replace(/\D/g, "");
+    if (otp.length !== 6 || submittedOtpRef.current === otp) {
+      return;
+    }
+
+    submittedOtpRef.current = otp;
+    onSubmit(otp);
+  }, [onSubmit, step.manualInput, value]);
 
   useEffect(() => {
     if (!latestMessage || step.manualInput !== "otp") {
@@ -27,20 +47,19 @@ export function ManualStepAction({
       ? latestMessage.timestamp.toDate().getTime()
       : new Date(String(latestMessage.timestamp)).getTime();
 
-    if (!Number.isFinite(messageTime)) {
+    if (!Number.isFinite(messageTime) || !latestMessage.otp) {
       return;
     }
 
     const now = Date.now();
-    const windowStart = now - 20_000;
-    const windowEnd = now + 3 * 60 * 1000;
-    const inWindow = messageTime >= windowStart && messageTime <= windowEnd;
+    const validFrom = now - 30_000;
+    const validUntil = now + 3 * 60_000;
 
-    if (!inWindow || !latestMessage.otp) {
+    if (messageTime < validFrom || messageTime > validUntil) {
       return;
     }
 
-    const otpDigits = latestMessage.otp.replace(/\D/g, "").slice(0, 6);
+    const otpDigits = String(latestMessage.otp).replace(/\D/g, "").slice(0, 6);
     if (!otpDigits) {
       return;
     }

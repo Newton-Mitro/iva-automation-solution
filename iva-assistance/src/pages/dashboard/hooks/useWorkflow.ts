@@ -27,6 +27,7 @@ type DomActionResult = {
   found: boolean;
   requiresHuman?: boolean;
   message?: string;
+  urlChanged?: boolean;
 };
 
 function getWorkflowValue(
@@ -303,6 +304,7 @@ export function useWorkflow(
   const [paused, setPaused] = useState(false);
   const [humanPrompt, setHumanPrompt] = useState<HumanPrompt | null>(null);
   const executingStep = useRef<string | null>(null);
+  const executionGeneration = useRef(0);
   const singleStepId = useRef<string | null>(null);
 
   /**
@@ -647,17 +649,32 @@ export function useWorkflow(
                 candidate instanceof HTMLInputElement,
             );
 
-          if (inputs.length === 0) {
+          const otpInputs = Array.from(
+            new Set([
+              ...inputs,
+              ...Array.from(
+                document.querySelectorAll<HTMLInputElement>(
+                  'input[id*="otp" i], input[name*="otp" i], input[inputmode="numeric"], input[type="tel"]',
+                ),
+              ),
+            ]),
+          ).filter(
+            (input) =>
+              input.offsetParent !== null || input.getClientRects().length > 0,
+          );
+
+          if (otpInputs.length === 0) {
             return { found: false, message: "OTP inputs were not found." };
           }
 
-          const digits = config.value.replace(/\D/g, "");
-          inputs.slice(0, digits.length).forEach((input, index) => {
+          const digits = config.value.replace(/\D/g, "").slice(0, 6);
+          otpInputs.slice(0, digits.length).forEach((input, index) => {
             const setter = Object.getOwnPropertyDescriptor(
               HTMLInputElement.prototype,
               "value",
             )?.set;
             setter?.call(input, digits[index]);
+            input.dispatchEvent(new Event("focus", { bubbles: true }));
             input.dispatchEvent(new Event("input", { bubbles: true }));
             input.dispatchEvent(new Event("change", { bubbles: true }));
           });
@@ -847,22 +864,6 @@ export function useWorkflow(
                   }
                   monthButton.click();
                   await new Promise((resolve) => setTimeout(resolve, 150));
-                }
-              }
-
-              if (!preferredDates.length) {
-                const fallbackDate = Array.from(
-                  document.querySelectorAll<HTMLButtonElement>("button"),
-                ).find(
-                  (candidate) =>
-                    !candidate.disabled &&
-                    candidate.offsetParent !== null &&
-                    /^\d{1,2}$/.test(candidate.textContent?.trim() ?? "") &&
-                    !candidate.getAttribute("aria-label"),
-                );
-                if (fallbackDate) {
-                  fallbackDate.click();
-                  return { found: true };
                 }
               }
 
@@ -1095,9 +1096,38 @@ export function useWorkflow(
       ],
     });
 
-    return (
-      result?.result ?? { found: false, message: "The page did not respond." }
-    );
+    const actionResult = result?.result ?? {
+      found: false,
+      message: "The page did not respond.",
+    };
+
+    if (actionResult.found && step.retryOnSameUrl) {
+      const initialPath = new URL(target.url ?? "").pathname;
+      const startedAt = Date.now();
+      let currentPath = initialPath;
+
+      while (Date.now() - startedAt < 5000) {
+        try {
+          const updatedTab = await chrome.tabs.get(target.id);
+          currentPath = new URL(updatedTab.url ?? "").pathname;
+        } catch {
+          // The tab can briefly be unavailable while the page navigates.
+        }
+
+        if (currentPath !== initialPath) {
+          break;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 250));
+      }
+
+      return {
+        ...actionResult,
+        urlChanged: currentPath !== step.retryOnSameUrl.path,
+      };
+    }
+
+    return actionResult;
   }
 
   function advanceStep(
@@ -1129,6 +1159,39 @@ export function useWorkflow(
     }
 
     addLog(`Step started: ${nextStep.title}`, "info");
+    return true;
+  }
+
+  function retryFromStep(stepId: string, retryStepId: string): boolean {
+    const currentIndex = steps.findIndex((step) => step.id === stepId);
+    const retryIndex = steps.findIndex((step) => step.id === retryStepId);
+
+    if (currentIndex < 0 || retryIndex < 0 || retryIndex >= currentIndex) {
+      return false;
+    }
+
+    setSteps((current) =>
+      current.map((step, index) => {
+        if (index === currentIndex) {
+          return { ...step, status: "completed", progress: 100 };
+        }
+
+        if (index === retryIndex) {
+          return { ...step, status: "running", progress: 0 };
+        }
+
+        if (index > retryIndex && index < currentIndex) {
+          return { ...step, status: "completed", progress: 100 };
+        }
+
+        return step;
+      }),
+    );
+    setHumanPrompt(null);
+    addLog(
+      "Appointment date did not advance the page; trying the next available date.",
+      "warning",
+    );
     return true;
   }
 
@@ -1189,12 +1252,13 @@ export function useWorkflow(
       return;
     }
 
+    executionGeneration.current += 1;
     executingStep.current = null;
-    addLog(`Step skipped: ${step.title}`, "warning");
+    addLog(`Step skipped and marked done: ${step.title}`, "warning");
     if (singleStepId.current === stepId) {
-      completeSingleStep(stepId, "skipped");
+      completeSingleStep(stepId);
     } else {
-      setRunning(advanceStep(stepId, "skipped"));
+      setRunning(advanceStep(stepId));
       setPaused(false);
     }
   }
@@ -1219,6 +1283,7 @@ export function useWorkflow(
     }
 
     addLog(`Continuing after failed step: ${step.title}`, "warning");
+    executionGeneration.current += 1;
     executingStep.current = null;
     if (singleStepId.current === stepId) {
       completeSingleStep(stepId);
@@ -1416,6 +1481,7 @@ export function useWorkflow(
       return;
     }
     executingStep.current = currentStep.id;
+    const currentExecutionGeneration = executionGeneration.current;
 
     if (currentStep.manual && currentStep.manualInput === "otp") {
       setRunning(false);
@@ -1447,10 +1513,7 @@ export function useWorkflow(
         currentStep.action === "select" ||
         currentStep.action === "select-option") &&
       !mappedValue &&
-      !(
-        currentStep.id === "select-appointment-date" &&
-        currentStep.selectionType === "date"
-      )
+      currentStep.selectionType !== "date"
     ) {
       const reason = `No data available for ${currentStep.title} (${currentStep.valueKey ?? "value"}).`;
       addLog(reason, "error");
@@ -1473,6 +1536,10 @@ export function useWorkflow(
 
     void executeDomAction(currentStep, mappedValue)
       .then((result) => {
+        if (currentExecutionGeneration !== executionGeneration.current) {
+          return;
+        }
+
         if (!result.found) {
           addLog(
             result.message ?? `Element not found for ${currentStep.title}.`,
@@ -1491,16 +1558,24 @@ export function useWorkflow(
           });
           addLog(`Human action required: ${currentStep.title}`, "warning");
         } else {
-          addLog(`Step completed: ${currentStep.title}`, "success");
           if (singleStepId.current === currentStep.id) {
+            addLog(`Step completed: ${currentStep.title}`, "success");
             completeSingleStep(currentStep.id);
+          } else if (currentStep.retryOnSameUrl && !result.urlChanged) {
+            addLog(`Step completed: ${currentStep.title}`, "success");
+            retryFromStep(currentStep.id, currentStep.retryOnSameUrl.stepId);
           } else {
+            addLog(`Step completed: ${currentStep.title}`, "success");
             advanceStep(currentStep.id);
           }
         }
         executingStep.current = null;
       })
       .catch((error: unknown) => {
+        if (currentExecutionGeneration !== executionGeneration.current) {
+          return;
+        }
+
         addLog(
           error instanceof Error
             ? error.message

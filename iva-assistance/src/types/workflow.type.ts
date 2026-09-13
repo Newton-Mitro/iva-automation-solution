@@ -106,6 +106,14 @@ export type WorkflowStepDefinition = {
    * element is not present.
    */
   optional?: boolean;
+
+  /**
+   * Repeats a later step when this action leaves the tab on the given path.
+   */
+  retryOnSameUrl?: {
+    path: string;
+    stepId: string;
+  };
 };
 
 /* -------------------------------------------------------------------------- */
