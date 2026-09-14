@@ -348,11 +348,13 @@ export const phaseOneWorkFlow: WorkflowStepDefinition[] = [
   {
     id: "p1_select_ivac",
     phase: "phase_one",
-    title: "Wait for Mission and IVAC center Selection",
+    title: "Select Mission and IVAC center",
     icon: MapPin,
     selectors: ["button"],
     text: "Select your IVAC center",
-    action: "wait",
+    action: "select",
+    selectionType: "text",
+    valueKey: "appointment.ivacCenter",
   },
 
   {
