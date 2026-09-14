@@ -1,23 +1,8 @@
 import { useState } from "react";
-import {
-  ArrowRight,
-  BarChart3,
-  Check,
-  Clock3,
-  Globe2,
-  Laptop2,
-  LockKeyhole,
-  ShieldCheck,
-} from "lucide-react";
+import { Check, Clock3, Globe2, LockKeyhole } from "lucide-react";
 import AuthScreen from "./AuthScreen";
-import { AuthCallout } from "../components/landing/AuthCallout";
-import { FeatureCard } from "../components/landing/FeatureCard";
-import { InfoBlock } from "../components/landing/InfoBlock";
-import { InfoPage } from "../components/landing/InfoPage";
-import { PackageCard } from "../components/landing/PackageCard";
 import { TopNavigation } from "../components/landing/TopNavigation";
 import {
-  packages,
   type AuthMode,
   type LandingView,
 } from "../components/landing/landing-data";
@@ -82,23 +67,7 @@ export default function LandingPage() {
                     iva assistance আপনার ভিসা আবেদনকে গুছিয়ে রাখে, নিয়মিত
                     নজরদারি করে এবং পরবর্তী ধাপ পরিষ্কারভাবে দেখায়।
                   </p>
-                  <div className="mt-7 flex items-center gap-5">
-                    <button
-                      className="inline-flex items-center gap-2 rounded-md bg-[var(--app-primary)] px-5 py-4 text-sm font-bold text-white shadow-[0_8px_22px_rgba(56,96,82,0.14)] transition hover:bg-[var(--app-primary-hover)]"
-                      onClick={() => openAuth("signup")}
-                    >
-                      আপনার workspace খুলুন <ArrowRight size={17} />
-                    </button>
-                    <button
-                      className="inline-flex items-center gap-2 border-0 bg-transparent text-sm font-semibold text-[var(--app-text-secondary)] transition hover:text-[var(--app-text)]"
-                      onClick={() => navigate("software")}
-                    >
-                      কীভাবে কাজ করে{" "}
-                      <span className="text-base text-[var(--app-warning)]">
-                        ↘
-                      </span>
-                    </button>
-                  </div>
+
                   <div className="mt-12 flex items-center gap-3 text-[11px] text-[var(--app-text-secondary)]">
                     <div className="flex pl-1.5">
                       {"R M A +".split(" ").map((letter, index) => (
@@ -244,146 +213,7 @@ export default function LandingPage() {
                 <span>স্বচ্ছতা</span>
                 <span>নিয়ন্ত্রণ</span>
               </section>
-
-              <section
-                className="mx-auto max-w-[1240px] px-5 pb-18 pt-10 md:px-8 xl:px-0"
-                id="software"
-              >
-                <div className="mb-8">
-                  <p className="mb-5 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.13em] text-[var(--app-primary)]">
-                    <span className="block h-px w-6 bg-[var(--app-warning)]" />{" "}
-                    আবেদন করার আরও শান্ত উপায়
-                  </p>
-                  <h2 className="text-4xl font-normal leading-tight tracking-[-0.05em] text-[var(--app-text)]">
-                    প্রয়োজনীয় সব সুবিধা।
-                    <br />
-                    <i className="not-italic text-[var(--app-primary)]">
-                      অপ্রয়োজনীয় কিছু নয়।
-                    </i>
-                  </h2>
-                </div>
-                <div className="grid gap-5 md:grid-cols-3">
-                  <FeatureCard
-                    icon={<BarChart3 />}
-                    title="পুরো চিত্র দেখুন"
-                    text="একটি workspace থেকেই আবেদন, status এবং পরবর্তী কাজের সব তথ্য দেখুন।"
-                  />
-                  <FeatureCard
-                    icon={<Clock3 />}
-                    title="পরিবর্তনের আগে থাকুন"
-                    text="আপনি নিজের কাজে ব্যস্ত থাকুন, workflow আপনার আবেদনের দিকে নজর রাখবে।"
-                  />
-                  <FeatureCard
-                    icon={<ShieldCheck />}
-                    title="তথ্য থাকুক ব্যক্তিগত"
-                    text="আপনার applicant data আপনার account-এই থাকে; privacy এখানে একটি মূল সুবিধা।"
-                  />
-                </div>
-              </section>
-
-              <AuthCallout onOpen={openAuth} />
             </>
-          )}
-
-          {view === "software" && (
-            <InfoPage
-              eyebrow="সফটওয়্যার"
-              title={
-                <>
-                  <span>গুরুত্বপূর্ণ কাগজপত্রের</span>
-                  <br />
-                  <i>আরও সহজ ছন্দ।</i>
-                </>
-              }
-              onBack={() => navigate("home")}
-            >
-              <p className="text-base leading-7 text-[var(--app-text-secondary)]">
-                iva assistance ছড়িয়ে থাকা ভিসা প্রক্রিয়াকে ছোট, পরিষ্কার এবং সহজ
-                ধাপে সাজিয়ে দেয়। আবেদন তৈরি করুন, নথি একসঙ্গে রাখুন এবং পরবর্তী
-                করণীয় সবসময় জেনে রাখুন।
-              </p>
-              <div className="mt-8 grid gap-5 md:grid-cols-3">
-                <InfoBlock
-                  icon={<Laptop2 />}
-                  title="একটি focused workspace"
-                  text="আবেদন, profile, workflow ধাপ এবং activity log আলাদা tab নয়, এক জায়গাতেই থাকে।"
-                />
-                <InfoBlock
-                  icon={<Clock3 />}
-                  title="নিয়ন্ত্রিত automation"
-                  text="বারবার করতে হয় এমন যাচাই automation সামলায়, গুরুত্বপূর্ণ সিদ্ধান্ত থাকে আপনার হাতে।"
-                />
-                <InfoBlock
-                  icon={<ShieldCheck />}
-                  title="বিশ্বাসকে কেন্দ্র করে তৈরি"
-                  text="workspace default-ভাবেই private; account অনুযায়ী data isolation ও সহজ controls থাকে।"
-                />
-              </div>
-            </InfoPage>
-          )}
-
-          {view === "developer" && (
-            <InfoPage
-              eyebrow="ডেভেলপার সম্পর্কে"
-              title={
-                <>
-                  <span>এমন একজনের তৈরি,</span>
-                  <br />
-                  <i>যারও এটি প্রয়োজন ছিল।</i>
-                </>
-              }
-              onBack={() => navigate("home")}
-            >
-              <p className="text-base leading-7 text-[var(--app-text-secondary)]">
-                iva assistance একটি independent tool, তৈরি হয়েছে “সব জমা দিয়েছি”
-                এবং “এখন নিশ্চিন্ত হতে পারি”-এর মাঝের সময়টির জন্য। এটি
-                বাস্তবধর্মী: কম ঝামেলা, বেশি confidence এবং পরবর্তী ধাপের
-                পরিষ্কার ধারণা।
-              </p>
-              <div className="mt-8 flex items-start gap-4 rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface-2)] p-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--app-primary)] text-lg font-bold text-white">
-                  N
-                </div>
-                <div>
-                  <strong className="block text-base text-[var(--app-text)]">
-                    সমস্যার কাছাকাছি থাকা independent software।
-                  </strong>
-                  <p className="mt-1 text-sm leading-6 text-[var(--app-text-secondary)]">
-                    ভ্রমণকারী, পরিবার এবং সীমান্ত পেরোনোর পরিকল্পনায়
-                    সহায়তাকারীদের কথা মাথায় রেখে যত্নসহকারে তৈরি।
-                  </p>
-                </div>
-              </div>
-            </InfoPage>
-          )}
-
-          {view === "pricing" && (
-            <InfoPage
-              eyebrow="প্যাকেজ কিনুন"
-              title={
-                <>
-                  <span>আপনার প্রয়োজনের</span>
-                  <br />
-                  <i>শান্তি বেছে নিন।</i>
-                </>
-              }
-              onBack={() => navigate("home")}
-            >
-              <p className="text-base leading-7 text-[var(--app-text-secondary)]">
-                আপনার বর্তমান ভ্রমণের জন্য উপযুক্ত workspace দিয়ে শুরু করুন।
-                প্রয়োজন হলে বেশি active application এবং support-এর package বেছে
-                নিন।
-              </p>
-              <div className="mt-8 grid gap-5 lg:grid-cols-2">
-                {packages.map((item) => (
-                  <PackageCard
-                    key={item.name}
-                    {...item}
-                    onChoose={() => openAuth("signup")}
-                  />
-                ))}
-              </div>
-            </InfoPage>
           )}
         </>
       )}

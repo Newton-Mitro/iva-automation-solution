@@ -38,24 +38,6 @@ export function TopNavigation({
         }
       >
         <button
-          className="border-0 bg-transparent text-left text-sm font-semibold text-[var(--app-text-secondary)] transition hover:text-[var(--app-text)]"
-          onClick={() => onNavigate("software")}
-        >
-          সফটওয়্যার
-        </button>
-        <button
-          className="border-0 bg-transparent text-left text-sm font-semibold text-[var(--app-text-secondary)] transition hover:text-[var(--app-text)]"
-          onClick={() => onNavigate("pricing")}
-        >
-          প্যাকেজ
-        </button>
-        <button
-          className="border-0 bg-transparent text-left text-sm font-semibold text-[var(--app-text-secondary)] transition hover:text-[var(--app-text)]"
-          onClick={() => onNavigate("developer")}
-        >
-          ডেভেলপার সম্পর্কে
-        </button>
-        <button
           className="border-0 bg-transparent text-left text-sm font-semibold text-[var(--app-text-secondary)] transition hover:text-[var(--app-text)] lg:hidden"
           onClick={() => onOpenAuth("signin")}
         >
