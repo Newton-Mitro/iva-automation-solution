@@ -117,7 +117,7 @@ export function ApplicationForm({
               name="prefer_appointment_dates"
               label="Preferred appointment dates"
               defaultValue={value("prefer_appointment_dates")}
-              placeholder="2026-09-09, 2026-09-10"
+              placeholder="YYYY-MM-DD, YYYY-MM-DD"
             />
             <p className="-mt-1 text-[7px] ivac-text-muted">
               Enter dates in order, separated by commas. The first available
