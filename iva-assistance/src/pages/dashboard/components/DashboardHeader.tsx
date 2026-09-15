@@ -30,7 +30,7 @@ export default function DashboardHeader({
                 assistance
               </em>
             </span>
-            <p className="text-[9px] text-[var(--app-text-muted)]">
+            <p className="text-[9px] text-[var(--app-text-muted)] -pt-2">
               Application & Appointment Booking Assistant
             </p>
           </div>

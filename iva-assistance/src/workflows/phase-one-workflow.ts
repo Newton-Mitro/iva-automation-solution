@@ -62,6 +62,7 @@ export const phaseOneWorkFlow: WorkflowStepDefinition[] = [
       'iframe[src*="challenges.cloudflare.com" i]',
     ],
     action: "wait",
+    timeout: 120000,
   },
 
   {
@@ -158,6 +159,7 @@ export const phaseOneWorkFlow: WorkflowStepDefinition[] = [
       'iframe[src*="challenges.cloudflare.com" i]',
     ],
     action: "wait",
+    timeout: 120000,
   },
 
   {

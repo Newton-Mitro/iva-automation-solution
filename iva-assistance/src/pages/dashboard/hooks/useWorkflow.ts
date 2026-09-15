@@ -633,6 +633,48 @@ export function useWorkflow(
           };
         }
 
+        const isVerificationWait =
+          config.action === "wait" &&
+          config.selectors.some((selector) =>
+            /verify you are human|turnstile|cf-turnstile|challenges\.cloudflare\.com/i.test(
+              selector,
+            ),
+          );
+
+        if (isVerificationWait) {
+          const verificationCompleted = () => {
+            const checkedCheckbox = config.selectors.some((selector) =>
+              Array.from(document.querySelectorAll(selector)).some(
+                (candidate) =>
+                  candidate instanceof HTMLInputElement &&
+                  candidate.type === "checkbox" &&
+                  candidate.checked,
+              ),
+            );
+            const responseField = document.querySelector<
+              HTMLInputElement | HTMLTextAreaElement
+            >(
+              'input[name="cf-turnstile-response"], textarea[name="cf-turnstile-response"]',
+            );
+
+            return checkedCheckbox || Boolean(responseField?.value.trim());
+          };
+
+          while (
+            !verificationCompleted() &&
+            Date.now() - startedAt < config.waitForMs
+          ) {
+            await new Promise((resolve) => setTimeout(resolve, 250));
+          }
+
+          if (!verificationCompleted()) {
+            return {
+              found: false,
+              message: `Human verification was not completed after waiting ${Math.round(config.waitForMs / 1000)} seconds.`,
+            };
+          }
+        }
+
         element.scrollIntoView({ block: "center", behavior: "smooth" });
 
         if (
@@ -1091,7 +1133,7 @@ export function useWorkflow(
           manualInput: step.manualInput,
           selectionType: step.selectionType,
           fileIndex: step.fileIndex,
-          waitForMs: 20000,
+          waitForMs: step.timeout ?? 20000,
         },
       ],
     });
