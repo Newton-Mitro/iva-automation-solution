@@ -24,3 +24,5 @@ pnpm-debug.log*
 # OS and editor files
 .DS_Store
 .vscode/
+
+*.tsbuildinfo
